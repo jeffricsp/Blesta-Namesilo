@@ -707,24 +707,38 @@ class Namesilo extends Module {
 
             $module_row = $this->getNamesiloRow();
 
-            $api = $this->getApi($module_row->meta->user, $module_row->meta->key, $module_row->meta->sandbox == "true", null, true);
-            $domains = new NamesiloDomains($api);
-
             $services = $this->Record->select(array("services.id","services.client_id"))
                 ->from("services")
                 ->where('module_row_id','=',$module_row->id)
                 ->where('status','=','active')
                 ->fetchAll();
 
-            $vars['changes'] = array();
+			$vars['service_ids'] = array();
+            foreach($services as $service){
+                $vars['service_ids'][] = $service->id;
+			}
 
-            foreach($services as $service_id){
-                $vars['changes'][] = $this->getRenewInfo($service_id->id,$domains);
-            }
-
-            $this->view->set( "vars", $vars );
+            $this->view->set("vars", $vars);
+            $this->view->set("url", $this->base_uri . "settings/company/modules/addrow/" . $module_row->id);
             return $this->view->fetch();
-        }else{
+		} elseif ($action == 'get_renew_info') {
+			$service_id = isset($_GET['service_id']) ? $_GET['service_id'] : null;
+			if (is_null($service_id)) {
+				print('null');
+				exit();
+			}
+
+            // Load the helpers required for this view
+            Loader::loadModels($this,array("Services","Clients","Record","ModuleManager","ClientGroups"));
+
+			$module_row = $this->getNamesiloRow();
+
+			$api = $this->getApi($module_row->meta->user, $module_row->meta->key, $module_row->meta->sandbox == "true", null, true);
+            $domains = new NamesiloDomains($api);
+			$vars = $this->getRenewInfo($service_id,$domains);
+			print(json_encode($vars));
+			exit();
+		}else{
             // Load the view into this object, so helpers can be automatically added to the view
             $this->view = new View("add_row", "default");
             $this->view->base_uri = $this->base_uri;
