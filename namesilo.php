@@ -2302,15 +2302,27 @@ class Namesilo extends Module {
         $target_date_obj = $expires->modify("- " . (3 + $suspend_days) . " days");
         $target_date = $target_date_obj->format('Y-m-d H:i:s');
 
-        if($date_renews->diff($target_date_obj)->format('%a') > 0){
+        if($date_renews->diff($target_date_obj)->format('%a') >= 90){
             $vars = array(
                 'service_id' => $service_id,
                 'domain' => $service->name,
                 'date_before' => $date_renews->format('Y-m-d H:i:s'),
                 'date_after' => $target_date,
-                'error' => false
+                'error' => false,
+                'checked' => false,
+                'highlight' => true
             );
-        }
+        } elseif ($date_renews->diff($target_date_obj)->format('%a') > 0) {
+            $vars = array(
+                'service_id' => $service_id,
+                'domain' => $service->name,
+                'date_before' => $date_renews->format('Y-m-d H:i:s'),
+                'date_after' => $target_date,
+                'error' => false,
+                'checked' => true,
+                'highlight' => false
+            );
+		}
 
         return $vars;
     }
