@@ -21,8 +21,12 @@
             ).done(function (output) {
                 if(output.hasOwnProperty("error") && !output.error){
                     new_row = $('<tr></tr>');
-                    button = $('<input type="checkbox" name="sync_services[]" checked="checked">').val(output.service_id);
-                    new_row.append($('<td></td>').append(button))
+                    checkbox = $('<input type="checkbox" name="sync_services[]">').val(output.service_id);
+                    checkbox.prop("checked", output.checked);
+                    if (output.highlight) {
+                        new_row.css("background-color", "yellow");
+                    }
+                    new_row.append($('<td></td>').append(checkbox))
                     new_row.append($('<td></td>').text(output.domain));
                     new_row.append($('<td></td>').text(output.date_before));
                     new_row.append($('<td></td>').text(output.date_after));
